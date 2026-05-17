@@ -1,0 +1,48 @@
+{
+  "status": "success",
+  "results": [
+    {
+      "status": "success",
+      "path": "https://mgx-backend-cdn.metadl.com/generate/images/1185015/2026-05-14/orwnvoiaagoq/hero-kyoto-machiya-wooden-house.png",
+      "absolute_path": "https://mgx-backend-cdn.metadl.com/generate/images/1185015/2026-05-14/orwnvoiaagoq/hero-kyoto-machiya-wooden-house.png",
+      "url": "https://mgx-backend-cdn.metadl.com/generate/images/1185015/2026-05-14/orwnvoiaagoq/hero-kyoto-machiya-wooden-house.png",
+      "message": "Image generated successfully.\n\nNote: The image is on CDN and will be displayed automatically. Just describe what you created briefly, no need to mention filenames or URLs.",
+      "description": "Beautiful traditional Kyoto machiya wooden house exterior with warm lighting, traditional Japanese architecture, wooden lattice facade, tiled roof, peaceful street scene, warm afternoon light, professional architectural photography",
+      "style": "photorealistic",
+      "filename": "hero-kyoto-machiya-wooden-house.jpg"
+    },
+    {
+      "status": "success",
+      "path": "https://mgx-backend-cdn.metadl.com/generate/images/1185015/2026-05-14/orwnrpiaagnq/service-new-construction-wooden-house.png",
+      "absolute_path": "https://mgx-backend-cdn.metadl.com/generate/images/1185015/2026-05-14/orwnrpiaagnq/service-new-construction-wooden-house.png",
+      "url": "https://mgx-backend-cdn.metadl.com/generate/images/1185015/2026-05-14/orwnrpiaagnq/service-new-construction-wooden-house.png",
+      "message": "Image generated successfully.\n\nNote: The image is on CDN and will be displayed automatically. Just describe what you created briefly, no need to mention filenames or URLs.",
+      "description": "Japanese new wooden house construction in progress, traditional timber frame structure, skilled carpenter working with natural wood, bright daylight, clean construction site, professional documentary photography",
+      "style": "photorealistic",
+      "filename": "service-new-construction-wooden-house.jpg"
+    },
+    {
+      "status": "success",
+      "path": "https://mgx-backend-cdn.metadl.com/generate/images/1185015/2026-05-14/orwnu7iaagqq/service-renovation-machiya-interior.png",
+      "absolute_path": "https://mgx-backend-cdn.metadl.com/generate/images/1185015/2026-05-14/orwnu7iaagqq/service-renovation-machiya-interior.png",
+      "url": "https://mgx-backend-cdn.metadl.com/generate/images/1185015/2026-05-14/orwnu7iaagqq/service-renovation-machiya-interior.png",
+      "message": "Image generated successfully.\n\nNote: The image is on CDN and will be displayed automatically. Just describe what you created briefly, no need to mention filenames or URLs.",
+      "description": "Interior renovation of a traditional Japanese house, modern kitchen being installed in a machiya, blend of traditional wooden beams with modern amenities, warm natural lighting, professional interior photography",
+      "style": "photorealistic",
+      "filename": "service-renovation-machiya-interior.jpg"
+    },
+    {
+      "status": "success",
+      "path": "https://mgx-backend-cdn.metadl.com/generate/images/1185015/2026-05-14/orwnqmyaagqa/service-repair-roof-tiles.png",
+      "absolute_path": "https://mgx-backend-cdn.metadl.com/generate/images/1185015/2026-05-14/orwnqmyaagqa/service-repair-roof-tiles.png",
+      "url": "https://mgx-backend-cdn.metadl.com/generate/images/1185015/2026-05-14/orwnqmyaagqa/service-repair-roof-tiles.png",
+      "message": "Image generated successfully.\n\nNote: The image is on CDN and will be displayed automatically. Just describe what you created briefly, no need to mention filenames or URLs.",
+      "description": "Close-up of skilled craftsman repairing traditional Japanese tile roof (kawara), hands working carefully on clay tiles, traditional tools, blue sky background, professional documentary photography",
+      "style": "photorealistic",
+      "filename": "service-repair-roof-tiles.jpg"
+    }
+  ],
+  "success_count": 4,
+  "failed_count": 0,
+  "message": "Generated 4/4 images"
+}
