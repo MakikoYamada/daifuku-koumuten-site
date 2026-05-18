@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type SubmitStatus = "idle" | "submitting" | "success" | "error";
 
 const CONTACT_ENDPOINT = import.meta.env.VITE_CONTACT_ENDPOINT;
+const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
 
 const initialForm = {
   name: "",
@@ -19,6 +20,68 @@ const ContactSection = () => {
   const [formData, setFormData] = useState(initialForm);
   const [status, setStatus] = useState<SubmitStatus>("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const turnstileRef = useRef<HTMLDivElement>(null);
+  const widgetIdRef = useRef<string | null>(null);
+
+  // Cloudflare Turnstile ウィジェットの読み込み・描画
+  useEffect(() => {
+    if (!TURNSTILE_SITE_KEY) return;
+
+    // 完了画面ではフォームが消えるのでウィジェットを破棄し、
+    // 「続けてお問い合わせ」で戻ったとき再生成できるようにする
+    if (status === "success") {
+      if (window.turnstile && widgetIdRef.current) {
+        window.turnstile.remove(widgetIdRef.current);
+      }
+      widgetIdRef.current = null;
+      setTurnstileToken("");
+      return;
+    }
+
+    const renderWidget = () => {
+      if (!turnstileRef.current || widgetIdRef.current || !window.turnstile) return;
+      widgetIdRef.current = window.turnstile.render(turnstileRef.current, {
+        sitekey: TURNSTILE_SITE_KEY,
+        callback: (token) => setTurnstileToken(token),
+        "expired-callback": () => setTurnstileToken(""),
+        "error-callback": () => setTurnstileToken(""),
+      });
+    };
+
+    if (window.turnstile) {
+      renderWidget();
+      return;
+    }
+
+    let timer: number | undefined;
+    if (!document.querySelector("script[data-turnstile]")) {
+      const s = document.createElement("script");
+      s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+      s.async = true;
+      s.defer = true;
+      s.setAttribute("data-turnstile", "");
+      s.onload = renderWidget;
+      document.head.appendChild(s);
+    } else {
+      timer = window.setInterval(() => {
+        if (window.turnstile) {
+          window.clearInterval(timer);
+          renderWidget();
+        }
+      }, 200);
+    }
+    return () => {
+      if (timer) window.clearInterval(timer);
+    };
+  }, [status]);
+
+  const resetTurnstile = () => {
+    setTurnstileToken("");
+    if (window.turnstile && widgetIdRef.current) {
+      window.turnstile.reset(widgetIdRef.current);
+    }
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -38,6 +101,14 @@ const ContactSection = () => {
       return;
     }
 
+    if (TURNSTILE_SITE_KEY && !turnstileToken) {
+      setStatus("error");
+      setErrorMessage(
+        "認証を完了してください（少し待つと認証欄が表示されます）。"
+      );
+      return;
+    }
+
     setStatus("submitting");
     setErrorMessage("");
 
@@ -47,24 +118,30 @@ const ContactSection = () => {
       const res = await fetch(CONTACT_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          "cf-turnstile-response": turnstileToken,
+        }),
       });
       const data = await res.json();
 
       if (data.result === "ok") {
         setStatus("success");
         setFormData(initialForm);
+        resetTurnstile();
       } else {
         setStatus("error");
         setErrorMessage(
           data.message || "送信に失敗しました。時間をおいて再度お試しください。"
         );
+        resetTurnstile(); // Turnstile トークンは使い切りなので再認証させる
       }
     } catch {
       setStatus("error");
       setErrorMessage(
         "送信に失敗しました。通信環境をご確認のうえ、再度お試しください。"
       );
+      resetTurnstile();
     }
   };
 
@@ -234,6 +311,13 @@ const ContactSection = () => {
                 onChange={handleChange}
               />
             </div>
+
+            {/* Turnstile (スパム対策) */}
+            {TURNSTILE_SITE_KEY && (
+              <div className="flex justify-center pt-2">
+                <div ref={turnstileRef} />
+              </div>
+            )}
 
             {/* Error message */}
             {status === "error" && (

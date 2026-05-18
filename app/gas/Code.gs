@@ -24,10 +24,26 @@ function doPost(e) {
 
     var data = JSON.parse(e.postData.contents);
 
-    // --- スパム対策: ハニーポット ---
+    // --- スパム対策1: ハニーポット ---
     // 画面に表示されない "company" 項目。Bot が入力したら静かに成功扱いで破棄。
     if (data.company) {
       return jsonOutput({ result: 'ok' });
+    }
+
+    // --- スパム対策2: Cloudflare Turnstile 検証 ---
+    // スクリプトプロパティ TURNSTILE_SECRET を設定すると有効化される。
+    // (Apps Script: プロジェクトの設定 → スクリプト プロパティ)
+    // 未設定なら検証スキップ（移行期間中もフォームは動作）。
+    var turnstileSecret = PropertiesService.getScriptProperties()
+      .getProperty('TURNSTILE_SECRET');
+    if (turnstileSecret) {
+      var token = trimStr(data['cf-turnstile-response']);
+      if (!token || !verifyTurnstile(turnstileSecret, token)) {
+        return jsonOutput({
+          result: 'error',
+          message: '認証に失敗しました。ページを再読み込みして再度お試しください。',
+        });
+      }
     }
 
     // --- 必須項目チェック ---
@@ -44,9 +60,18 @@ function doPost(e) {
     var now = new Date();
 
     // --- スプレッドシートに追記 ---
+    // sanitizeForSheet で先頭が数式扱いされる値を無害化 (Sheets formula injection 対策)
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheet = ss.getSheetByName(SHEET_NAME) || ss.getActiveSheet();
-    sheet.appendRow([now, name, furigana, email, phone, category, message]);
+    sheet.appendRow([
+      now,
+      sanitizeForSheet(name),
+      sanitizeForSheet(furigana),
+      sanitizeForSheet(email),
+      sanitizeForSheet(phone),
+      sanitizeForSheet(category),
+      sanitizeForSheet(message),
+    ]);
 
     // --- 通知メール送信 ---
     var subject = '【お問い合わせ】' + category + ' / ' + name + ' 様';
@@ -81,6 +106,36 @@ function doGet() {
 
 function trimStr(v) {
   return String(v == null ? '' : v).trim();
+}
+
+/**
+ * Sheets/CSV formula injection 対策。
+ * 先頭が = + - @ タブ CR の値は ' を付けてテキストとして扱わせる。
+ */
+function sanitizeForSheet(v) {
+  var s = String(v == null ? '' : v);
+  if (/^[=+\-@\t\r]/.test(s)) {
+    s = "'" + s;
+  }
+  return s;
+}
+
+/** Cloudflare Turnstile トークンをサーバ側検証する */
+function verifyTurnstile(secret, token) {
+  try {
+    var resp = UrlFetchApp.fetch(
+      'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+      {
+        method: 'post',
+        payload: { secret: secret, response: token },
+        muteHttpExceptions: true,
+      }
+    );
+    var result = JSON.parse(resp.getContentText());
+    return result.success === true;
+  } catch (err) {
+    return false;
+  }
 }
 
 function jsonOutput(obj) {
