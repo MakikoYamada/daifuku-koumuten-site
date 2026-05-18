@@ -11,6 +11,12 @@ dist/
 .env.*
 !.env.example
 
+# lockfile はこのリポジトリでは pnpm-lock.yaml に統一 (npm の lock は混在させない)
+package-lock.json
+
+# Claude Code のローカル個人設定 (共有用 .claude/settings.json はコミット可)
+.claude/settings.local.json
+
 # misc
 .DS_Store
 *.log
